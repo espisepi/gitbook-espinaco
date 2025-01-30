@@ -1,0 +1,144 @@
+IMPORTANTE: Ejecutar los comandos en git bash de windows
+
+
+===== Generar un archivo por cada commit ============
+
+
+mkdir -p commits_html  # Crea la carpeta si no existe
+
+# Obtener la cantidad total de commits para numerarlos
+total_commits=$(git rev-list --count HEAD)
+counter=1
+
+git log --reverse --pretty=format:"%h|%s" | while IFS='|' read -r commit_hash commit_title; do
+    sanitized_title=$(echo "$commit_title" | tr -cd '[:alnum:]-_ ' | tr ' ' '_')
+
+    commit_file="commits_html/${counter}_commit_${commit_hash}_${sanitized_title}.html"
+
+    cat <<EOF > "$commit_file"
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[$counter] Commit $commit_hash - $commit_title</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: #1e1e1e; color: #c9d1d9; }
+        h2 { color: #58a6ff; border-bottom: 2px solid #30363d; padding-bottom: 5px; }
+        pre { background: #161b22; color: #c9d1d9; padding: 10px; overflow-x: auto; border-radius: 5px; margin-bottom: 15px; }
+        code { font-family: "Courier New", Courier, monospace; }
+        .diff { white-space: pre-wrap; display: block; padding: 2rem 0.5rem; border: solid 1px; border-radius: 5px; }
+        .addition { color: #28a745; background-color: rgba(40, 167, 69, 0.2); display: block; }
+        .deletion { color: #d73a49; background-color: rgba(215, 58, 73, 0.2); display: block; }
+    </style>
+</head>
+<body>
+
+<h2>[$counter] Commit $commit_hash</h2>
+<p><strong>Fecha:</strong> $(git show -s --format=%ad --date=local "$commit_hash")</p>
+<p><strong>Autor:</strong> $(git show -s --format=%an "$commit_hash")</p>
+<p><strong>Mensaje:</strong> $commit_title</p>
+<h3>Detalles del commit:</h3>
+
+EOF
+
+    # Extraer cambios del commit correctamente sin escapar caracteres < y >
+git show "$commit_hash" --color=never | awk '
+BEGIN { print "<pre><code class=\"diff\">" }
+/^diff / { print "</code></pre>\n<pre><code class=\"diff\">"; next }
+{ print }
+END { print "</code></pre>" }
+' >> "$commit_file"
+
+
+    cat <<EOF >> "$commit_file"
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll("code.diff").forEach(function(block) {
+            let lines = block.innerHTML.split("\\n");
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith("+")) {
+                    lines[i] = "<span class='addition'>" + lines[i] + "</span>";
+                } else if (lines[i].startsWith("-")) {
+                    lines[i] = "<span class='deletion'>" + lines[i] + "</span>";
+                }
+            }
+            block.innerHTML = lines.join("\\n");
+        });
+    });
+</script>
+
+</body>
+</html>
+EOF
+
+    echo "Archivo creado: $commit_file"
+
+    ((counter++))
+
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+===== FIN Generar un archivo por cada commit ============
+
+
+==== Generar un solo archivo ====================
+
+
+echo "<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Historial de Commits</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: #f7f7f7; }
+        h2 { color: #0052cc; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+        pre { background: #282c34; color: #ffffff; padding: 10px; overflow-x: auto; border-radius: 5px; }
+        code { font-family: 'Courier New', Courier, monospace; }
+        .diff { white-space: pre-wrap; }
+        .addition { color: #28a745; background-color: #e6ffed; display: block; }
+        .deletion { color: #d73a49; background-color: #ffeef0; display: block; }
+    </style>
+</head>
+<body>" > commits.html
+
+git log --reverse --pretty=format:"<h2>Commit %h</h2><p><strong>Fecha:</strong> %ad</p><p><strong>Autor:</strong> %an</p><p><strong>Mensaje:</strong> %s</p><pre><code class='diff'>" --date=local >> commits.html
+
+git log --reverse --pretty=format:"%h" | while read commit_hash; do
+    echo "</code></pre><pre><code class='diff'>" >> commits.html
+    git show $commit_hash --color=never >> commits.html
+    echo "</code></pre>" >> commits.html
+done
+
+echo "
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('code.diff').forEach(function(block) {
+            let html = block.innerHTML
+                .replace(/^(\+.*)$/gm, \"<span class='addition'>$1</span>\")  // Verde para añadidos
+                .replace(/^(-.*)$/gm, \"<span class='deletion'>$1</span>\");  // Rojo para eliminados
+            block.innerHTML = html;
+        });
+    });
+</script>
+</body>
+</html>" >> commits.html
+
+
+==== FIN Generar un solo archivo ====================

@@ -1,0 +1,3 @@
+IMPORTANTE: Ejecutar los comandos en git bash de windows
+
+comandos = scripts que aparecen en la carpeta scripts-git-bash
