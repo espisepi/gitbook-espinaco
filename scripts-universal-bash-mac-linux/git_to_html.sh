@@ -7,7 +7,16 @@ mkdir -p commits_html
 total_commits=$(git rev-list --count HEAD)
 counter=1
 
-git log --reverse --pretty=format:"%h|%s" | while IFS='|' read -r commit_hash commit_title; do
+# Leer los commits en un array para evitar el problema del subshell
+commits=()
+while IFS='|' read -r commit_hash commit_title; do
+    commits+=("$commit_hash|$commit_title")
+done < <(git log --reverse --pretty=format:"%h|%s")
+
+# Recorrer la lista de commits y generar los archivos HTML
+for commit in "${commits[@]}"; do
+    IFS='|' read -r commit_hash commit_title <<< "$commit"
+
     # Reemplazar caracteres especiales en el título del commit
     sanitized_title=$(echo "$commit_title" | tr -cd '[:alnum:]-_ ' | tr ' ' '_')
 
