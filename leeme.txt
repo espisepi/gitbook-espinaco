@@ -1,3 +1,12 @@
 IMPORTANTE: Ejecutar los comandos en git bash de windows
 
 comandos = scripts que aparecen en la carpeta scripts-git-bash
+
+
+==== MAC Ejecutar .sh =====
+
+Ejecutar todo esto en la raiz del proyecto con el archivo .sh dentro de la raiz
+
+chmod +x script-archivo-por-commit-dev.sh
+
+./script-archivo-por-commit-dev.sh
