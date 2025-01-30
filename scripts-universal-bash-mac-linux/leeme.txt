@@ -1,0 +1,7 @@
+
+Ejecutar los siguientes comandos
+para ejecutar el archivo git_to_html.sh
+
+-> chmod +x git_to_html.sh
+
+-> ./git_to_html.sh 

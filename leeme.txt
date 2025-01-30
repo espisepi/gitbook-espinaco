@@ -3,10 +3,10 @@ IMPORTANTE: Ejecutar los comandos en git bash de windows
 comandos = scripts que aparecen en la carpeta scripts-git-bash
 
 
-==== MAC Ejecutar .sh =====
+==== MAC Ejecutar .sh alojado en carpeta scripts-universal-bash-mac-linux =====
 
 Ejecutar todo esto en la raiz del proyecto con el archivo .sh dentro de la raiz
 
-chmod +x script-archivo-por-commit-dev.sh
+Comando Para dar permisos a un fichero .sh: chmod +x script-archivo-por-commit-dev.sh
 
-./script-archivo-por-commit-dev.sh
+Comando Para ejecutar un fichero .sh: ./script-archivo-por-commit-dev.sh
