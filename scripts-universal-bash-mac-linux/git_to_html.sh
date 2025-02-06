@@ -93,13 +93,13 @@ for commit in "${commits[@]}"; do
             const bodyText = document.body.innerHTML;
             const diffRegex = /diff[\\s\\S]+?(?=\\ndiff|\\s*\$)/g; // Captura bloques enteros de diff hasta el siguiente o el final
 
-            const formattedText = bodyText.replace(diffRegex, function (match) {
+            const formattedText = bodyText.replace(diffRegex, function(match) {
                 return \`<pre><code class="diff">\${match.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>\`;
             });
 
             document.body.innerHTML = formattedText;
 
-            document.querySelectorAll("code.diff").forEach(function (block) {
+            document.querySelectorAll("code.diff").forEach(function(block) {
                 let lines = block.innerHTML.split("\\n").map(line => {
                     if (line.startsWith("+")) {
                         return \`<span class='addition'>\${line}</span>\`;
@@ -110,6 +110,12 @@ for commit in "${commits[@]}"; do
                 });
                 block.innerHTML = lines.join("\\n");
             });
+
+            // --- Nuevo código para eliminar el bloque extra al final ---
+            // Esta expresión regular busca, al final del contenido, una o más repeticiones
+            // de "&lt;/code&gt;&lt;/pre&gt;" o "</code></pre>" (con o sin escape)
+            document.body.innerHTML = document.body.innerHTML.replace(/((?:&lt;\/code&gt;&lt;\/pre&gt;|<\/code><\/pre>)+)\s*$/, '');
+            // -----------------------------------------------------------------
         });
     </script>
 </head>
