@@ -88,9 +88,32 @@ for commit in "${commits[@]}"; do
             background: transparent;
         }
     </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const bodyText = document.body.innerHTML;
+            const diffRegex = /diff[\\s\\S]+?(?=\\ndiff|\\s*\$)/g; // Captura bloques enteros de diff hasta el siguiente o el final
+
+            const formattedText = bodyText.replace(diffRegex, function (match) {
+                return \`<pre><code class="diff">\${match.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>\`;
+            });
+
+            document.body.innerHTML = formattedText;
+
+            document.querySelectorAll("code.diff").forEach(function (block) {
+                let lines = block.innerHTML.split("\\n").map(line => {
+                    if (line.startsWith("+")) {
+                        return \`<span class='addition'>\${line}</span>\`;
+                    } else if (line.startsWith("-")) {
+                        return \`<span class='deletion'>\${line}</span>\`;
+                    }
+                    return line;
+                });
+                block.innerHTML = lines.join("\\n");
+            });
+        });
+    </script>
 </head>
 <body>
-
 EOF
 
     # Agregar información del commit
@@ -103,33 +126,8 @@ EOF
 
     echo "</code></pre>" >> "$commit_file"
 
-    # Agregar JavaScript para resaltar cambios correctamente
+    # Cerrar etiquetas body y html
     cat <<EOF >> "$commit_file"
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const bodyText = document.body.innerHTML;
-        const diffRegex = /diff[\\s\\S]+?(?=\\ndiff|\\s*\$)/g; // Captura bloques enteros de diff hasta el siguiente o el final
-
-        const formattedText = bodyText.replace(diffRegex, function (match) {
-            return \`<pre><code class="diff">\${match.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>\`;
-        });
-
-        document.body.innerHTML = formattedText;
-
-        document.querySelectorAll("code.diff").forEach(function (block) {
-            let lines = block.innerHTML.split("\\n").map(line => {
-                if (line.startsWith("+")) {
-                    return \`<span class='addition'>\${line}</span>\`;
-                } else if (line.startsWith("-")) {
-                    return \`<span class='deletion'>\${line}</span>\`;
-                }
-                return line;
-            });
-            block.innerHTML = lines.join("\\n");
-        });
-    });
-</script>
-
 </body>
 </html>
 EOF
@@ -138,5 +136,4 @@ EOF
 
     # Incrementar el contador
     ((counter++))
-
 done
