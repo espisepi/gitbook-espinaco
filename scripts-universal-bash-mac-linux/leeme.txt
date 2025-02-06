@@ -1,7 +1,28 @@
 
+
+========= git_to_html.sh ======================
+
 Ejecutar los siguientes comandos
 para ejecutar el archivo git_to_html.sh
 
 -> chmod +x git_to_html.sh
 
 -> ./git_to_html.sh 
+
+========= FIN git_to_html.sh ======================
+
+
+
+========= html_list_commits ==============
+
+Ejecutar el script en la misma localizacion que
+se encuentra la carpeta commits_html
+
+Ejecutar los siguientes comandos
+para ejecutar el archivo html_list_commits.sh
+
+-> chmod +x html_list_commits.sh
+
+-> ./html_list_commits.sh
+
+========= FIN html_list_commits ==============
