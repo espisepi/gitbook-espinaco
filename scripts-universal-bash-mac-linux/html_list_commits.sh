@@ -3,6 +3,7 @@
 # Descripción: Genera un único archivo HTML (index.html) que contiene un listado de enlaces a todos
 #              los archivos HTML de la carpeta commits_html, ordenados por el número de commit.
 #              Además, establece el título del HTML con el nombre del proyecto git.
+#              Ahora se incluye un buscador similar al del script 1 para filtrar la lista de commits.
 
 output_file="index.html"
 html_dir="commits_html"
@@ -54,11 +55,63 @@ cat <<EOF > "$output_file"
         a:hover {
             text-decoration: underline;
         }
+        /* Estilos para el buscador con dark mode */
+        #searchInput {
+          width: 100%;
+          padding: 8px;
+          margin-bottom: 10px;
+          border: 1px solid #30363d;
+          border-radius: 4px;
+          background-color: #161b22;
+          color: #c9d1d9;
+        }
+        #searchInput::placeholder {
+          color: #8b949e;
+        }
+        /* Scrollbar personalizado (en caso de que la lista sea muy larga) */
+        ::-webkit-scrollbar {
+          width: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #30363d;
+          border-radius: 5px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #161b22;
+        }
+        ::-webkit-scrollbar-corner {
+          background: transparent;
+        }
     </style>
+    <script>
+      function searchLinks() {
+        var input = document.getElementById("searchInput");
+        var filter = input.value.toUpperCase().trim();
+        var searchTerms = filter.split(/\s+/);
+        var ul = document.getElementById("linksList");
+        var li = ul.getElementsByTagName("li");
+        
+        for (var i = 0; i < li.length; i++) {
+          var a = li[i].getElementsByTagName("a")[0];
+          if (a) {
+            var txtValue = (a.textContent || a.innerText).toUpperCase();
+            var match = true;
+            for (var j = 0; j < searchTerms.length; j++) {
+              if (txtValue.indexOf(searchTerms[j]) === -1) {
+                match = false;
+                break;
+              }
+            }
+            li[i].style.display = match ? "" : "none";
+          }
+        }
+      }
+    </script>
 </head>
 <body>
     <h1>${project_name} list commits</h1>
-    <ul>
+    <input type="text" id="searchInput" onkeyup="searchLinks()" placeholder="Buscar...">
+    <ul id="linksList">
 EOF
 
 # Listar los archivos usando ls (solo el nombre) y ordenarlos numéricamente según el número al inicio.
