@@ -60,7 +60,7 @@ for commit in "${commits[@]}"; do
     }
     /* Bloques de diff (cada archivo modificado) */
     .file-diff {
-      margin-bottom: 20px;
+      margin: 1rem 0;
       border: 1px solid #30363d;
       border-radius: 5px;
     }
