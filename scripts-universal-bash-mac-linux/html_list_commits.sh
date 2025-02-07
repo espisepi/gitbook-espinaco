@@ -2,6 +2,7 @@
 # Archivo: generar_listado.sh
 # Descripción: Genera un único archivo HTML (index.html) que contiene un listado de enlaces a todos
 #              los archivos HTML de la carpeta commits_html, ordenados por el número de commit.
+#              Además, establece el título del HTML con el nombre del proyecto git.
 
 output_file="index.html"
 html_dir="commits_html"
@@ -12,6 +13,14 @@ if [ ! -d "$html_dir" ]; then
   exit 1
 fi
 
+# Obtener el nombre del proyecto git usando git rev-parse y basename
+project_name=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
+
+# Si no se encuentra un proyecto git, asignar un valor por defecto
+if [ -z "$project_name" ]; then
+  project_name="Proyecto Git"
+fi
+
 # Crear el archivo HTML y escribir la cabecera
 cat <<EOF > "$output_file"
 <!DOCTYPE html>
@@ -19,7 +28,7 @@ cat <<EOF > "$output_file"
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listado de Commits</title>
+    <title>${project_name} list commits</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,7 +57,7 @@ cat <<EOF > "$output_file"
     </style>
 </head>
 <body>
-    <h1>Listado de Commits</h1>
+    <h1>${project_name} list commits</h1>
     <ul>
 EOF
 
