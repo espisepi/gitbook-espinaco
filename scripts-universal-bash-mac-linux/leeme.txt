@@ -39,4 +39,6 @@ para ejecutar el archivo project_to_html.sh
 
 -> ./project_to_html.sh
 
+-> ./project_to_html.sh ./mi_proyecto html_output
+
 ========= FIN project_to_html.sh ==============
