@@ -49,6 +49,10 @@ generate_file_html() {
     a:hover {
       text-decoration: underline;
     }
+    .button-return {
+      position: fixed;
+      bottom: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -61,7 +65,7 @@ EOF
 
     cat <<EOF >> "$output_file"
   </pre>
-  <p><a href="index.html">Volver al índice</a></p>
+  <p><a class="button-return" href="index.html">Volver al índice</a></p>
 </body>
 </html>
 EOF
