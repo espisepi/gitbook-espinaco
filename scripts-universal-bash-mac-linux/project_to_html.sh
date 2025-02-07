@@ -2,7 +2,8 @@
 # Archivo: generar_html_proyecto.sh
 # Descripción:
 #   Recorre recursivamente el directorio de origen y genera, en un directorio de salida,
-#   un archivo HTML por cada archivo (mostrando su contenido en modo oscuro).
+#   un archivo HTML por cada archivo (mostrando su contenido en modo oscuro y con scroll
+#   horizontal y vertical cuando sea necesario).
 #   Además, en cada carpeta se crea un index.html para facilitar la navegación entre
 #   los archivos HTML generados.
 #
@@ -32,15 +33,26 @@ generate_file_html() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>$filename</title>
   <style>
-    body {
-      background-color: #1e1e1e;
-      color: #c9d1d9;
-      font-family: monospace;
-      padding: 20px;
+    body { 
+      font-family: Arial, sans-serif; 
+      max-width: 800px;
+      margin: auto;
+      padding: 20px; 
+      background-color: #1e1e1e; 
+      color: #c9d1d9;  
     }
-    pre {
-      white-space: pre-wrap;
-      word-wrap: break-word;
+    h1 { 
+      color: #58a6ff;
+      border-bottom: 2px solid #30363d;
+      padding-bottom: 5px;
+    }
+    pre { 
+      background: #161b22; 
+      color: #c9d1d9; 
+      padding: 10px; 
+      overflow: auto; /* Scroll horizontal y vertical */
+      border-radius: 5px;
+      white-space: pre; /* Respetar saltos de línea originales */
     }
     a {
       color: #58a6ff;
@@ -52,6 +64,20 @@ generate_file_html() {
     .button-return {
       position: fixed;
       bottom: 0.5rem;
+    }
+    /* Scrollbar personalizado */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #161b22;
+    }
+    ::-webkit-scrollbar-corner {
+      background: transparent;
     }
   </style>
 </head>
@@ -86,14 +112,18 @@ generate_index() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Índice de $current_dir_name</title>
   <style>
-    body {
+    body { 
+      font-family: Arial, sans-serif; 
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
       background-color: #1e1e1e;
       color: #c9d1d9;
-      font-family: sans-serif;
-      padding: 20px;
     }
-    h1 {
+    h1 { 
       color: #58a6ff;
+      border-bottom: 2px solid #30363d;
+      padding-bottom: 5px;
     }
     ul {
       list-style: none;
@@ -108,6 +138,20 @@ generate_index() {
     }
     a:hover {
       text-decoration: underline;
+    }
+    /* Scrollbar personalizado (en caso de que la lista sea muy larga) */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #161b22;
+    }
+    ::-webkit-scrollbar-corner {
+      background: transparent;
     }
   </style>
 </head>
