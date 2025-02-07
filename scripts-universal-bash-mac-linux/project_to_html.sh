@@ -1,22 +1,23 @@
 #!/bin/bash
-# Archivo: project_to_html.sh
+# Archivo: generar_html_proyecto.sh
 # Descripción:
-#   Recorre recursivamente un directorio de origen y, para cada archivo de texto
-#   (excluyendo directorios como .git y node_modules), genera un archivo HTML que
-#   muestra su contenido en modo oscuro.
-#
-#   Se genera un árbol en el directorio de salida que refleja la estructura original,
-#   además de un índice global y un index.html en cada subcarpeta para navegar.
+#   Recorre recursivamente el directorio de origen y genera, en un directorio de salida,
+#   un archivo HTML por cada archivo (mostrando su contenido en modo oscuro).
+#   Además, en cada carpeta se crea un index.html para facilitar la navegación entre
+#   los archivos HTML generados.
 #
 # Uso:
-#   ./project_to_html.sh [directorio_origen] [directorio_salida]
+#   ./generar_html_proyecto.sh [directorio_origen] [directorio_salida]
+#
+#   Si no se indican parámetros:
+#     - directorio_origen se asume como el directorio actual (.)
+#     - directorio_salida se crea en "html_output"
 #
 # Ejemplo:
-#   ./project_to_html.sh ./mi_proyecto html_output
+#   ./generar_html_proyecto.sh src mi_salida_html
 #
 
-# ------------------------------
-# Función: generar el HTML de un archivo
+# --- Función para generar el HTML que muestra el contenido de un archivo ---
 generate_file_html() {
     local input_file="$1"
     local output_file="$2"
@@ -55,7 +56,7 @@ generate_file_html() {
   <pre>
 EOF
 
-    # Escapa caracteres HTML (<, >, &) y añade el contenido del archivo
+    # Se escapan los caracteres HTML especiales y se añade el contenido del archivo.
     sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' "$input_file" >> "$output_file"
 
     cat <<EOF >> "$output_file"
@@ -66,8 +67,7 @@ EOF
 EOF
 }
 
-# ------------------------------
-# Función: generar un index.html en cada directorio
+# --- Función para generar un index.html en una carpeta dada ---
 generate_index() {
     local dir="$1"
     local index_file="$dir/index.html"
@@ -88,21 +88,33 @@ generate_index() {
       font-family: sans-serif;
       padding: 20px;
     }
-    h1 { color: #58a6ff; }
-    ul { list-style: none; padding: 0; }
-    li { margin-bottom: 8px; }
-    a { color: #58a6ff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    h1 {
+      color: #58a6ff;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <h1>Índice de $current_dir_name</h1>
 EOF
 
-    # Si no estamos en la raíz de la salida, agregamos un enlace al índice global
+    # Si no estamos en la raíz del directorio de salida, se añade un enlace para subir un nivel
     if [ "$dir" != "$OUTPUT_DIR" ]; then
-      cat <<EOF >> "$index_file"
-  <p><a href="../global_index.html">Volver al índice global</a></p>
+        cat <<EOF >> "$index_file"
+  <p><a href="../index.html">Subir un nivel</a></p>
 EOF
     fi
 
@@ -110,7 +122,7 @@ EOF
   <ul>
 EOF
 
-    # Listar subdirectorios (añadiendo "/" al final)
+    # Listar subdirectorios (se añade "/" al final para indicar que es directorio)
     for subdir in "$dir"/*/ ; do
         if [ -d "$subdir" ]; then
             subdirname=$(basename "$subdir")
@@ -118,7 +130,7 @@ EOF
         fi
     done
 
-    # Listar archivos HTML (excepto index.html)
+    # Listar archivos HTML generados (se omite el index.html)
     for file in "$dir"/* ; do
         if [ -f "$file" ]; then
             filename=$(basename "$file")
@@ -135,115 +147,53 @@ EOF
 EOF
 }
 
-# ------------------------------
-# Variables de configuración
-
-# Directorio de origen: primer parámetro o el actual (.)
+# --- Variables de configuración ---
+# Directorio de origen: primer parámetro o el directorio actual (.)
 SOURCE_DIR="${1:-.}"
-if [ ! -d "$SOURCE_DIR" ]; then
-  echo "Error: El directorio de origen '$SOURCE_DIR' no existe."
-  exit 1
-fi
-# Obtenemos la ruta absoluta del directorio de origen
-SOURCE_DIR=$(cd "$SOURCE_DIR" && pwd)
-
 # Directorio de salida: segundo parámetro o "html_output"
 OUTPUT_DIR="${2:-html_output}"
-# Creamos OUTPUT_DIR y obtenemos su ruta absoluta
-if ! mkdir -p "$OUTPUT_DIR" 2>/dev/null; then
-    echo "Error: No se pudo crear el directorio de salida '$OUTPUT_DIR'. ¿Tienes permisos de escritura?"
-    exit 1
-fi
-OUTPUT_DIR=$(cd "$OUTPUT_DIR" && pwd)
 
-# Verificar que SOURCE_DIR y OUTPUT_DIR sean distintos
-if [ "$SOURCE_DIR" = "$OUTPUT_DIR" ]; then
+# Se obtienen las rutas absolutas para comprobar que no sean iguales
+SOURCE_DIR_ABS=$(realpath "$SOURCE_DIR")
+OUTPUT_DIR_ABS=$(realpath -m "$OUTPUT_DIR")
+if [ "$SOURCE_DIR_ABS" = "$OUTPUT_DIR_ABS" ]; then
     echo "El directorio de salida no puede ser el mismo que el de origen."
     exit 1
 fi
 
+# Se elimina el directorio de salida si existe y se crea de nuevo
+rm -rf "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
+
 echo "Generando archivos HTML a partir de los archivos en '$SOURCE_DIR'..."
+
+# Se cambia al directorio de origen para trabajar con rutas relativas
 pushd "$SOURCE_DIR" > /dev/null
 
-# ------------------------------
-# Excluir directorios que no queremos procesar (por ejemplo, .git y node_modules)
-EXCLUDES=(-not -path "./.git/*" -not -path "./node_modules/*")
-
-# Recorrer recursivamente los archivos (excluyendo los directorios indicados)
-find . -type f "${EXCLUDES[@]}" | while read -r file; do
-    # Eliminar el prefijo "./" para obtener la ruta relativa
+# Se recorre recursivamente cada archivo (find lista rutas relativas comenzando con "./")
+find . -type f | while read -r file; do
+    # Se elimina el prefijo "./" para obtener la ruta relativa limpia
     relpath="${file#./}"
+    # Ruta completa del archivo de origen
     input_file="$SOURCE_DIR/$relpath"
-    # Si el archivo ya termina en .html, no se le agrega de nuevo la extensión
-    if [[ "$relpath" == *.html ]]; then
-        output_file="$OUTPUT_DIR/$relpath"
-    else
-        output_file="$OUTPUT_DIR/$relpath.html"
-    fi
+    # Se genera la ruta de salida correspondiente; se le añade la extensión .html
+    output_file="$OUTPUT_DIR/$relpath.html"
+    # Se crea el directorio donde irá el archivo HTML generado
     output_dir_for_file=$(dirname "$output_file")
     mkdir -p "$output_dir_for_file"
+    # Se genera el HTML para el archivo actual
     generate_file_html "$input_file" "$output_file"
     echo "Generado: $output_file"
 done
 
 popd > /dev/null
 
-# ------------------------------
-# Generar índices locales en cada carpeta del directorio de salida
-echo "Generando índices locales en cada carpeta..."
+echo "Generando archivos index.html para la navegación..."
+
+# Se recorre cada directorio (en el árbol de salida) y se genera un index.html
 find "$OUTPUT_DIR" -type d | while read -r dir; do
     generate_index "$dir"
     echo "Índice generado en: $dir/index.html"
 done
 
-# ------------------------------
-# Generar el índice global en la raíz de OUTPUT_DIR
-global_index="$OUTPUT_DIR/global_index.html"
-echo "Generando índice global en: $global_index"
-cat <<EOF > "$global_index"
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Índice Global de Archivos</title>
-  <style>
-    body {
-      background-color: #1e1e1e;
-      color: #c9d1d9;
-      font-family: sans-serif;
-      padding: 20px;
-    }
-    h1 { color: #58a6ff; }
-    ul { list-style: none; padding: 0; }
-    li { margin-bottom: 8px; }
-    a { color: #58a6ff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <h1>Índice Global de Archivos</h1>
-  <ul>
-    <li><a href="index.html">[RAÍZ] Índice local de la raíz</a></li>
-EOF
-
-pushd "$OUTPUT_DIR" > /dev/null
-find . -type f -name "*.html" | while read -r file; do
-    # file tendrá el formato "./ruta/archivo.html"; se elimina el prefijo "./"
-    file="${file#./}"
-    base=$(basename "$file")
-    if [[ "$base" == "index.html" || "$base" == "global_index.html" ]]; then
-        continue
-    fi
-    echo "    <li>[FILE] <a href=\"$file\">$file</a></li>" >> "$global_index"
-done
-popd > /dev/null
-
-cat <<EOF >> "$global_index"
-  </ul>
-</body>
-</html>
-EOF
-
-echo "Proceso completado."
-echo "Abre '$global_index' en tu navegador para ver el índice global."
+echo "Proceso completado. Revisa el directorio '$OUTPUT_DIR' para ver los archivos HTML generados."
