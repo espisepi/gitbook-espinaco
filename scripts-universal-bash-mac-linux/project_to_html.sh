@@ -83,6 +83,7 @@ generate_file_html() {
 </head>
 <body>
   <h1>$filename</h1>
+    <p><a href="index.html">Volver al índice</a></p>
   <pre>
 EOF
 
