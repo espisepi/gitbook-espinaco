@@ -168,25 +168,38 @@ generate_index() {
       background: transparent;
     }
   </style>
-  <script>
-    function searchLinks() {
-      var input = document.getElementById("searchInput");
-      var filter = input.value.toUpperCase();
-      var ul = document.getElementById("linksList");
-      var li = ul.getElementsByTagName("li");
-      for (var i = 0; i < li.length; i++) {
-          var a = li[i].getElementsByTagName("a")[0];
-          if (a) {
-              var txtValue = a.textContent || a.innerText;
-              if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                  li[i].style.display = "";
-              } else {
-                  li[i].style.display = "none";
-              }
+ <script>
+  function searchLinks() {
+    var input = document.getElementById("searchInput");
+    // Se obtiene el texto ingresado, se convierte a mayúsculas y se eliminan espacios al inicio y final
+    var filter = input.value.toUpperCase().trim();
+    // Se separa el filtro en palabras usando espacios (uno o más)
+    var searchTerms = filter.split(/\s+/);
+    
+    var ul = document.getElementById("linksList");
+    var li = ul.getElementsByTagName("li");
+    
+    for (var i = 0; i < li.length; i++) {
+      var a = li[i].getElementsByTagName("a")[0];
+      if (a) {
+        // Se obtiene el texto del enlace y se transforma a mayúsculas
+        var txtValue = (a.textContent || a.innerText).toUpperCase();
+        var match = true;
+        
+        // Se recorre cada palabra del término de búsqueda y se verifica que esté incluida en el texto
+        for (var j = 0; j < searchTerms.length; j++) {
+          if (txtValue.indexOf(searchTerms[j]) === -1) {
+            match = false;
+            break;
           }
+        }
+        
+        // Si se encontraron todas las palabras, se muestra el elemento; de lo contrario, se oculta
+        li[i].style.display = match ? "" : "none";
       }
     }
-  </script>
+  }
+</script>
 </head>
 <body>
   <h1>Índice de $current_dir_name</h1>
