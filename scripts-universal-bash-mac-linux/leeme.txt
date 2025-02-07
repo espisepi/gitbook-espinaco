@@ -13,7 +13,7 @@ para ejecutar el archivo git_to_html.sh
 
 
 
-========= html_list_commits ==============
+========= html_list_commits.sh ==============
 
 Ejecutar el script en la misma localizacion que
 se encuentra la carpeta commits_html
@@ -25,4 +25,18 @@ para ejecutar el archivo html_list_commits.sh
 
 -> ./html_list_commits.sh
 
-========= FIN html_list_commits ==============
+========= FIN html_list_commits.sh ==============
+
+========= project_to_html.sh ==============
+
+Ejecutar el script en la misma localizacion que
+se encuentra en la carpeta del proyecto
+
+Ejecutar los siguientes comandos
+para ejecutar el archivo project_to_html.sh
+
+-> chmod +x project_to_html.sh
+
+-> ./project_to_html.sh
+
+========= FIN project_to_html.sh ==============
