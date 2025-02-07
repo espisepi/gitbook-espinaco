@@ -5,7 +5,7 @@
 #   un archivo HTML por cada archivo (mostrando su contenido en modo oscuro y con scroll
 #   horizontal y vertical cuando sea necesario).
 #   Además, en cada carpeta se crea un index.html para facilitar la navegación entre
-#   los archivos HTML generados.
+#   los archivos HTML generados. Ahora, en cada index se añade un buscador con estilos dark mode.
 #
 # Uso:
 #   ./generar_html_proyecto.sh [directorio_origen] [directorio_salida]
@@ -140,6 +140,19 @@ generate_index() {
     a:hover {
       text-decoration: underline;
     }
+    /* Estilos para el buscador con dark mode */
+    #searchInput {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      background-color: #161b22;
+      color: #c9d1d9;
+    }
+    #searchInput::placeholder {
+      color: #8b949e;
+    }
     /* Scrollbar personalizado (en caso de que la lista sea muy larga) */
     ::-webkit-scrollbar {
       width: 10px;
@@ -155,9 +168,29 @@ generate_index() {
       background: transparent;
     }
   </style>
+  <script>
+    function searchLinks() {
+      var input = document.getElementById("searchInput");
+      var filter = input.value.toUpperCase();
+      var ul = document.getElementById("linksList");
+      var li = ul.getElementsByTagName("li");
+      for (var i = 0; i < li.length; i++) {
+          var a = li[i].getElementsByTagName("a")[0];
+          if (a) {
+              var txtValue = a.textContent || a.innerText;
+              if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                  li[i].style.display = "";
+              } else {
+                  li[i].style.display = "none";
+              }
+          }
+      }
+    }
+  </script>
 </head>
 <body>
   <h1>Índice de $current_dir_name</h1>
+  <input type="text" id="searchInput" onkeyup="searchLinks()" placeholder="Buscar...">
 EOF
 
     # Si no estamos en la raíz del directorio de salida, se añade un enlace para subir un nivel
@@ -168,7 +201,7 @@ EOF
     fi
 
     cat <<EOF >> "$index_file"
-  <ul>
+  <ul id="linksList">
 EOF
 
     # Listar subdirectorios (se añade "/" al final para indicar que es directorio)
